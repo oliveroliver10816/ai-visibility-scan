@@ -16,40 +16,68 @@ name us, ignore us, or warn about us has a direct revenue consequence. First run
 
 ## What it captures
 
-30 questions × 2 engines = **60 runs**. Question mix: 8 brand-intent (`Ist Ozem+ seriös oder
-Betrug?`, `Gibt es Ozem+ in der Apotheke?`), 14 category-commercial (`Welche Abnehmkapseln sind
-die besten?`), 8 comparison/trust (`Ozempic Alternative ohne Rezept`, `Wovor warnt die
-Verbraucherzentrale…`).
+⚠ **Bob's correction, 2026-07-31 — the VA interprets NOTHING.** The first build asked her to judge
+"was Ozem+ mentioned", "which brands", "which sources". That put the analysis in her hands and made
+the data only as good as her understanding. **Rebuilt: she copies the question and pastes back the
+two raw replies. All extraction happens on our side.**
 
-Per run the VA records: was Ozem+/Oz+ named (**no / yes / mentioned as a warning**), every brand
-the answer named, every source URL shown, an explicit **"no sources shown"** flag, and an optional
-note. Exports one JSON file.
+30 questions, one screen each, two paste boxes (ChatGPT + Gemini). Question mix: 8 brand-intent
+(`Ist Ozem+ seriös oder Betrug?`), 14 category-commercial (`Welche Abnehmkapseln sind die besten?`),
+8 comparison/trust (`Wovor warnt die Verbraucherzentrale…`).
 
-⚠ **Deliberately no pre-filled competitor list.** The VA writes down every brand the answer names,
-so we *discover* the competitive set instead of assuming it.
+**The word limit and the source request live INSIDE the prompt she copies:**
+
+> Antworte in höchstens 120 Wörtern. Liste danach alle verwendeten Quellen als vollständige URLs
+> auf, eine pro Zeile. Wenn du keine Quellen hast, schreibe KEINE QUELLEN.
+
+That does three jobs at once: keeps answers short enough to copy comfortably, makes the engines
+emit their citations as plain URLs instead of hiding them behind footnote chips, and produces an
+explicit **`KEINE QUELLEN`** marker — so "no sources" is a fact in the data rather than an empty
+box we have to guess about. `citation_report.py` counts those and extracts every URL itself.
+
+⚠ **No pre-filled competitor list.** We discover the competitive set from the raw text rather than
+assuming it.
 
 ## Design decisions (VA-proofing)
 
-- **Guided one-run-at-a-time flow**, not a table — far harder to fill in the wrong row.
-- **Two hard guards**: cannot save without answering Q1, and cannot save with an empty sources box
-  unless "no sources shown" is ticked. An empty box and a genuine "nothing shown" mean different
-  things to the analysis, so the page refuses to let them collapse into each other.
-- **localStorage persistence**, resumes at the first unrecorded run; 60-square grid to jump back.
-- **"Can't do this one"** records an explicit gap — a recorded gap beats a guess.
-- Nothing is transmitted; the VA downloads a JSON file and sends it back.
+- **Zero judgment calls.** Copy, paste twice, next.
+- **One guard**: cannot save unless both boxes have text, or she presses "Couldn't get an answer".
+- **localStorage persistence + auto-send**, resumes at the first unanswered question.
+- **"Couldn't get an answer"** records an explicit gap. The footer tells her plainly not to invent
+  text to fill one.
+- **Nothing to email.** Each save POSTs both replies to our Cloudflare collector; a header badge
+  shows `all sent ✓` or `N not sent yet`, with a Resend button.
 
 ## Verified before shipping
 
-Driven end to end with Playwright: both guards fire, save advances correctly (Q1 ChatGPT → Q1
-Gemini), progress survives reload and resumes at the right run, grid jump restores saved values,
-export trims whitespace and drops blank lines, 60 squares render, zero console errors, no
-horizontal overflow desktop or mobile. **WCAG contrast: 12/12 pairs pass AA.**
+Driven end to end with Playwright, on the **live github.io page**: guard fires for each empty box
+independently, save advances and auto-sends, progress survives reload and resumes correctly, grid
+jump restores both pasted answers, 30 squares render, zero console errors, no horizontal overflow
+desktop or mobile. Cross-origin POST to the worker confirmed working. An answer saved while offline
+is kept and auto-flushed on reconnect. **WCAG contrast: 12/12 pairs pass AA.**
+Full chain re-tested: raw pastes → export → `citation_report.py` correctly stripped a run-on comma
+and a trailing period from URLs, counted the `KEINE QUELLEN` answer, and dropped Reddit/Wikipedia.
+
+## Collector
+
+Cloudflare Worker + D1 on the Osanix account — `collector/`, see its README.
+`https://ai-visibility-collect.fleet-fefsba.workers.dev`. Two tokens: the **submit** token ships
+in the public page and can only write; the **admin** token reads and never leaves this server
+(`/root/.config/ai-visibility-tokens.json`, chmod 600). Verified the submit token gets 403 on
+`/export`. ⚠ Deploy only with `--config ./wrangler.json` — the parent `/root/workspace/wrangler.jsonc`
+hijacks it otherwise.
+
+Pull the data:
+```bash
+AT=$(python3 -c "import json;print(json.load(open('/root/.config/ai-visibility-tokens.json'))['admin_token'])")
+curl -s "https://ai-visibility-collect.fleet-fefsba.workers.dev/export?token=$AT&batch=ozem-de" > answers.json
+```
 
 ## Next
 
-1. VA runs the 60 and returns `ai-answers-ozem-de.json`.
-2. Convert to JSONL and feed `citation_report.py` from the `link-outreach` skill → ranked cited
-   domains, our-vs-competitor presence, gap questions.
+1. VA works through the 30. Data arrives live — check `/status` or `/export` any time.
+2. Feed it to `citation_report.py` from the `link-outreach` skill → ranked cited domains,
+   our-vs-competitor presence, gap questions.
 3. Two outcomes to look for: **are we named at all**, and **what shape of page do the engines
    trust** — if they cite third-party review/comparison pages, we can build pages of that shape
    ourselves rather than pitching anyone (we already run review sites).
