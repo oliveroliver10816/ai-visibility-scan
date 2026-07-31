@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>AI visibility scan — results · Ozem+ DE</title>
+<meta name="description" content="What ChatGPT and Gemini actually answer for 30 German buying questions, and what it means for ozem-plus.store.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230A0C18'/%3E%3Crect x='8' y='7' width='7' height='7' rx='1.5' fill='%23F0A93B'/%3E%3Crect x='17' y='7' width='7' height='7' rx='1.5' fill='%23F0A93B'/%3E%3Crect x='8' y='17' width='7' height='7' rx='1.5' fill='none' stroke='%233A4066' stroke-width='2'/%3E%3Crect x='17' y='17' width='7' height='7' rx='1.5' fill='none' stroke='%233A4066' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0A0C18; --panel:#12162A; --edge:#232945; --rule:#2E355A;
+  --tx:#EAECF5; --dim:#8A90A8; --on:#F0A93B; --off:#39406B; --alert:#E2604A; --ok:#5FB89A;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto} *{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--ink);color:var(--tx);
+  font-family:Inter,system-ui,sans-serif;font-size:16px;line-height:1.62;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:920px;margin:0 auto;padding:0 22px}
+a{color:var(--on)}
+:focus-visible{outline:2px solid var(--on);outline-offset:3px;border-radius:3px}
+
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--dim)}
+h1{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;
+  font-size:clamp(2rem,6.2vw,3.5rem);line-height:1.02;letter-spacing:-.03em;margin:16px 0 0;
+  max-width:16ch}
+h1 em{font-style:normal;color:var(--on)}
+h2{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:600;
+  font-size:clamp(1.25rem,3vw,1.6rem);letter-spacing:-.02em;margin:0 0 6px}
+h3{font-size:.95rem;font-weight:600;margin:0 0 8px}
+p{margin:0 0 14px;max-width:68ch}
+.lede{color:var(--dim);font-size:1.06rem;margin-top:20px;max-width:60ch}
+
+header.top{padding:56px 0 34px;border-bottom:1px solid var(--rule)}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px}
+.chip{font-family:'IBM Plex Mono',monospace;font-size:.71rem;letter-spacing:.06em;
+  border:1px solid var(--rule);border-radius:100px;padding:5px 11px;color:var(--dim)}
+.chip b{color:var(--tx);font-weight:500}
+.chip.good{border-color:#2F5B4C;color:var(--ok)}
+
+/* ---- signature: the presence wall ---- */
+.wall{padding:44px 0 10px}
+.wallhead{display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+  flex-wrap:wrap;margin-bottom:18px}
+.legend{display:flex;gap:16px;font-family:'IBM Plex Mono',monospace;font-size:.71rem;
+  color:var(--dim);letter-spacing:.05em}
+.legend i{margin-right:6px;vertical-align:-1px}
+.cell{display:inline-block;width:13px;height:13px;border-radius:3px}
+.cell.on{background:var(--on)}
+.cell.off{border:1.5px solid var(--off)}
+
+.block{margin-bottom:26px}
+.blabel{display:flex;align-items:center;gap:14px;margin:0 0 12px}
+.blabel .t{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--dim);white-space:nowrap}
+.blabel .l{flex:1;height:1px;background:var(--rule)}
+.blabel .score{font-family:'IBM Plex Mono',monospace;font-size:.78rem;font-weight:500}
+.block.hit .score{color:var(--on)}
+.block.miss .score{color:var(--alert)}
+
+ul.qlist{list-style:none;margin:0;padding:0}
+.qrow{display:grid;grid-template-columns:30px 1fr 46px;align-items:center;gap:12px;
+  padding:6px 0;border-bottom:1px solid rgba(46,53,90,.45)}
+.qrow:last-child{border-bottom:none}
+.qn{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--dim)}
+.qt{font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.block.miss .qt{color:var(--dim)}
+.qc{display:flex;gap:6px;justify-content:flex-end}
+.qrow.head{border-bottom:none;padding:0 0 3px}
+.qrow.head em{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:.58rem;
+  letter-spacing:.05em;color:var(--dim);width:13px;text-align:center;display:inline-block}
+
+.verdict{border-left:3px solid var(--on);background:#171227;padding:16px 20px;
+  border-radius:0 10px 10px 0;margin:8px 0 0;max-width:70ch}
+.verdict p{margin:0;font-size:1rem}
+
+/* ---- toc ---- */
+nav.toc{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+  padding:20px 0;margin:34px 0 0}
+nav.toc ol{list-style:none;margin:0;padding:0;display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px 26px;counter-reset:t}
+nav.toc a{text-decoration:none;color:var(--tx);font-size:.9rem;display:block;padding:3px 0}
+nav.toc li{counter-increment:t}
+nav.toc a::before{content:counter(t,decimal-leading-zero);font-family:'IBM Plex Mono',monospace;
+  font-size:.7rem;color:var(--dim);margin-right:10px}
+nav.toc a:hover{color:var(--on)}
+
+section{padding:40px 0;border-bottom:1px solid var(--rule)}
+section:last-of-type{border-bottom:none}
+.sechead{margin-bottom:18px}
+
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:18px 0 0}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:18px 20px}
+.card .big{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;
+  font-size:1.9rem;letter-spacing:-.02em;line-height:1.1;display:block;margin-bottom:2px}
+.card .big.warn{color:var(--alert)}
+.card .big.good{color:var(--ok)}
+.card small{color:var(--dim);font-size:.84rem;display:block;line-height:1.45}
+
+table.dom{width:100%;border-collapse:collapse;margin-top:6px;font-size:.9rem}
+table.dom td{padding:7px 0;border-bottom:1px solid rgba(46,53,90,.45);vertical-align:middle}
+td.dm{font-family:'IBM Plex Mono',monospace;font-size:.82rem}
+td.dq{width:46%;text-align:right;white-space:nowrap}
+td.dq b{font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--dim);
+  margin-left:10px;font-weight:500}
+.bar{display:inline-block;height:7px;width:var(--w);background:var(--off);border-radius:3px;
+  vertical-align:middle;min-width:3px}
+table.dom tr:first-child .bar{background:var(--on)}
+
+ul.plain{margin:0 0 14px;padding-left:20px;color:var(--dim);max-width:68ch}
+ul.plain li{margin-bottom:7px}
+ul.plain b{color:var(--tx);font-weight:600}
+
+blockquote{margin:14px 0;padding:14px 18px;background:var(--panel);border:1px solid var(--edge);
+  border-radius:10px;font-size:.93rem;color:#D6D9E8;max-width:70ch}
+blockquote cite{display:block;margin-top:9px;font-style:normal;font-family:'IBM Plex Mono',monospace;
+  font-size:.71rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+
+.copy{position:relative;background:#080A14;border:1px solid var(--edge);border-radius:10px;
+  padding:14px 16px;margin:12px 0;font-family:'IBM Plex Mono',monospace;font-size:.8rem;
+  line-height:1.65;overflow-x:auto;white-space:pre;color:#C9CEE4}
+.copy button{position:absolute;top:8px;right:8px;font:inherit;font-size:.68rem;
+  letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:1px solid var(--rule);
+  background:var(--panel);color:var(--dim);border-radius:6px;padding:5px 9px;transition:.15s}
+.copy button:hover{color:var(--tx);border-color:var(--on)}
+.copy button.done{color:var(--ok);border-color:var(--ok)}
+
+ol.acts{list-style:none;margin:18px 0 0;padding:0;counter-reset:a}
+ol.acts li{counter-increment:a;position:relative;padding-left:44px;margin-bottom:20px;max-width:68ch}
+ol.acts li::before{content:counter(a,decimal-leading-zero);position:absolute;left:0;top:0;
+  font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--on);
+  border:1px solid var(--rule);border-radius:7px;width:30px;height:30px;
+  display:grid;place-items:center}
+ol.acts h3{margin-bottom:4px}
+ol.acts p{margin:0;color:var(--dim);font-size:.94rem}
+
+footer{padding:38px 0 60px;color:var(--dim);font-size:.85rem}
+footer .rule{height:1px;background:var(--rule);margin-bottom:22px}
+
+@media (max-width:640px){
+  .qrow{grid-template-columns:26px 1fr 46px;gap:9px}
+  .qt{font-size:.84rem}
+  td.dq{width:38%}
+  .blabel{flex-wrap:wrap;gap:4px 12px}
+  .blabel .t{white-space:normal;flex:1 1 100%;line-height:1.45}
+  .blabel .l{display:none}
+  .wallhead .legend{gap:12px;flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <span class="eyebrow">ozem-plus.store · Germany · 31 Jul 2026</span>
+  <h1>Named only when<br>they already<br><em>know our name.</em></h1>
+  <p class="lede">Thirty German buying questions, put to ChatGPT and Gemini by hand.
+     Sixty answers came back. Here is every one of them, and the one pattern that runs through all of it.</p>
+  <div class="meta">
+    <span class="chip good">VA run <b>complete — 60/60</b></span>
+    <span class="chip">questions <b>30</b></span>
+    <span class="chip">engines <b>2</b></span>
+    <span class="chip">skipped <b>0</b></span>
+    <span class="chip">cited domains <b>36</b></span>
+  </div>
+</div></header>
+
+<div class="wall"><div class="wrap">
+  <div class="wallhead">
+    <span class="eyebrow">Every answer · filled = we were named</span>
+    <span class="legend">
+      <span><i class="cell on"></i>named</span>
+      <span><i class="cell off"></i>not named</span>
+      <span>CG = ChatGPT · GM = Gemini</span>
+    </span>
+  </div>
+
+  <div class="block hit">
+    <div class="blabel">
+      <span class="t">Questions that contain our brand name</span>
+      <span class="l"></span>
+      <span class="score">16/16 named</span>
+    </div>
+    <ul class="qlist">
+<li class="qrow head"><span class="qn"></span><span class="qt"></span><span class="qc"><em>CG</em><em>GM</em></span></li>
+<li class="qrow"><span class="qn">01</span><span class="qt">Ist Ozem+ seriös oder Betrug?</span><span class="qc"><i class="cell on" aria-label="ChatGPT: named"></i><i class="cell on" aria-label="Gemini: named"></i></span></li>
+<li class="qrow"><span class="qn">02</span><span class="qt">Ozem+ Erfahrungen – funktioniert das wirklich?</span><span class="qc"><i class="cell on" aria-label="ChatGPT: named"></i><i class="cell on" aria-label="Gemini: named"></i></span></li>
+<li class="qrow"><span class="qn">03</span><span class="qt">Wo kann ich Ozem+ kaufen?</span><span class="qc"><i class="cell on" aria-label="ChatGPT: named"></i><i class="cell on" aria-label="Gemini: named"></i></span></li>
+<li class="qrow"><span class="qn">04</span><span class="qt">Gibt es Ozem+ in der Apotheke?</span><span class="qc"><i class="cell on" aria-label="ChatGPT: named"></i><i class="cell on" aria-label="Gemini: named"></i></span></li>
+<li class="qrow"><span class="qn">05</span><span class="qt">Ozem+ Test und Bewertung 2026</span><span class="qc"><i class="cell on" aria-label="ChatGPT: named"></i><i class="cell on" aria-label="Gemini: named"></i></span></li>
+<li class="qrow"><span class="qn">06</span><span class="qt">Ist Oz+ ein Fake-Produkt?</span><span class="qc"><i class="cell on" aria-label="ChatGPT: named"></i><i class="cell on" aria-label="Gemini: named"></i></span></li>
+<li class="qrow"><span class="qn">07</span><span class="qt">Was kostet Ozem+ und gibt es einen Rabatt?</span><span class="qc"><i class="cell on" aria-label="ChatGPT: named"></i><i class="cell on" aria-label="Gemini: named"></i></span></li>
+<li class="qrow"><span class="qn">08</span><span class="qt">Hat Ozem+ Nebenwirkungen?</span><span class="qc"><i class="cell on" aria-label="ChatGPT: named"></i><i class="cell on" aria-label="Gemini: named"></i></span></li>
+    </ul>
+  </div>
+
+  <div class="block miss">
+    <div class="blabel">
+      <span class="t">Questions a buyer asks before they know us</span>
+      <span class="l"></span>
+      <span class="score">0/44 named</span>
+    </div>
+    <ul class="qlist">
+<li class="qrow head"><span class="qn"></span><span class="qt"></span><span class="qc"><em>CG</em><em>GM</em></span></li>
+<li class="qrow"><span class="qn">09</span><span class="qt">Welche Abnehmkapseln sind die besten?</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">10</span><span class="qt">Beste Abnehmtabletten 2026</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">11</span><span class="qt">Welche Abnehmpillen wirken wirklich?</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">12</span><span class="qt">Beste Diätpillen ohne Rezept</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">13</span><span class="qt">Abnehmkapseln Testsieger</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">14</span><span class="qt">Welche Abnehmmittel gibt es in der Apotheke ohne Rezept?</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">15</span><span class="qt">Beste natürliche Alternative zu Ozempic</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">16</span><span class="qt">GLP-1 Kapseln ohne Rezept – was gibt es?</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">17</span><span class="qt">Welche Abnehmprodukte empfiehlt Stiftung Warentest?</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">18</span><span class="qt">Abnehmen ohne Sport – welche Mittel helfen wirklich?</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">19</span><span class="qt">Was hilft wirklich beim Abnehmen am Bauch?</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">20</span><span class="qt">Beste Fatburner für Frauen</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">21</span><span class="qt">Welche Schlankheitsmittel sind sicher?</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">22</span><span class="qt">Berberin zum Abnehmen – welche Produkte gibt es?</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">23</span><span class="qt">Ozempic Alternative ohne Rezept kaufen</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">24</span><span class="qt">Was ist besser als Ozempic zum Abnehmen?</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">25</span><span class="qt">Abnehmkapseln Vergleich – welche Marke ist die beste?</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">26</span><span class="qt">Wovor warnt die Verbraucherzentrale beim Abnehmen?</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">27</span><span class="qt">Vorsicht Abzocke – welche Abnehmpillen sind Betrug?</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">28</span><span class="qt">Wo finde ich echte Erfahrungsberichte zu Abnehmkapseln?</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">29</span><span class="qt">Höhle der Löwen Abnehmprodukt – welches ist echt?</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+<li class="qrow"><span class="qn">30</span><span class="qt">Welche Abnehmkapseln haben eine Geld-zurück-Garantie?</span><span class="qc"><i class="cell off" aria-label="ChatGPT: not named"></i><i class="cell off" aria-label="Gemini: not named"></i></span></li>
+    </ul>
+  </div>
+
+  <div class="verdict"><p>The engines can describe us in detail — but only after the buyer
+    has typed our name. Across <b>22 category questions and 44 answers</b>,
+    neither engine mentioned us once. We are not competing badly for the category. We are absent from it.</p></div>
+</div></div>
+
+<div class="wrap"><nav class="toc"><ol>
+  <li><a href="#run">Did the VA finish</a></li>
+  <li><a href="#known">What they say when asked</a></li>
+  <li><a href="#route">Where the buyer gets sent</a></li>
+  <li><a href="#category">What wins the category</a></li>
+  <li><a href="#sources">Which sources they trust</a></li>
+  <li><a href="#next">What we do next</a></li>
+</ol></nav></div>
+
+<div class="wrap">
+
+<section id="run">
+  <div class="sechead"><h2>Did the VA finish</h2></div>
+  <p>Yes — the run is complete and the data is clean. She worked through it in one sitting,
+     first save 16:18 UTC, last 16:55 UTC on 31 Jul 2026.</p>
+  <div class="grid2">
+    <div class="card"><span class="big good">60/60</span>
+      <small>records on the collector — 30 ChatGPT, 30 Gemini. Every question number 1–30 has both engines.</small></div>
+    <div class="card"><span class="big good">0</span>
+      <small>marked "couldn't get an answer". No gaps to re-run.</small></div>
+    <div class="card"><span class="big good">60/60</span>
+      <small>answers carried at least one source URL. Not one came back "KEINE QUELLEN".</small></div>
+    <div class="card"><span class="big">406–1,785</span>
+      <small>characters per answer. Nothing stubbed, nothing pasted twice, no question echoed back instead of an answer.</small></div>
+  </div>
+  <p style="margin-top:18px">Checks run against the raw export: no duplicate pairs, no answer identical
+     across the two engines, no answer that merely repeats the question. She pasted what the engines
+     gave her, which is exactly what the sheet was rebuilt to ask of her.</p>
+</section>
+
+<section id="known">
+  <div class="sechead"><h2>What they say when the buyer knows our name</h2></div>
+  <p>All eight brand questions were answered by both engines — sixteen for sixteen. Ten of those
+     sixteen carry an explicit warning. One reads as a recommendation.</p>
+  <blockquote>Mein Urteil: Ozem+ wirkt stark unseriös – ich würde nicht bestellen. […]
+    Die als Betreiber genannte britische Firma ist seit dem 7. Januar 2025 aufgelöst.
+    <cite>ChatGPT — "Ist Ozem+ seriös oder Betrug?" · cites Companies House 15054770</cite></blockquote>
+  <blockquote>Zudem suggeriert der Produktname gezielt eine Nähe zum rezeptpflichtigen
+    Abnehm-Medikament Ozempic […] Wegen zweifelhafter Marketingmethoden und fehlender
+    Wirknachweise ist jedoch große Vorsicht geboten.
+    <cite>Gemini — same question</cite></blockquote>
+  <p>Both engines independently reach for the same three pillars: the Trustpilot rating,
+     the Verbraucherzentrale's GLP-1 advertising FAQ, and the <i>Höhle der Löwen</i> claim.
+     That is the answer a buyer sees today after searching our own brand.</p>
+</section>
+
+<section id="route">
+  <div class="sechead"><h2>Where the buyer actually gets sent</h2></div>
+  <p>This is the finding with the most direct revenue consequence, and it is separate
+     from the sentiment problem.</p>
+  <div class="grid2">
+    <div class="card"><span class="big warn">0</span>
+      <small><b>ozem-plus.store</b> — our site, the one with the six organic sales — was cited zero times in sixty answers.</small></div>
+    <div class="card"><span class="big">3</span>
+      <small><b>ozem-plus.com</b> is cited instead, and named as "the official website" by both engines.</small></div>
+    <div class="card"><span class="big">2</span>
+      <small><b>buyopluscaps.com</b> — cited as the checkout the order button leads to.</small></div>
+    <div class="card"><span class="big">5</span>
+      <small><b>shop-apotheke.com</b> — offered as a purchase route, via marketplace seller WR-Products.</small></div>
+  </div>
+  <p style="margin-top:18px">Asked point-blank where to buy, the engines route to
+     <b>ozem-plus.com, buyopluscaps.com, Shop-Apotheke, Kaufland and eBay</b>. Our domain is
+     not in that list. The brand demand we do have is being answered, and handed to someone else's checkout.</p>
+</section>
+
+<section id="category">
+  <div class="sechead"><h2>What wins the category instead</h2></div>
+  <p>The obvious read is that a competitor brand is beating us. It isn't. Across the
+     44 category answers, <b>no weight-loss supplement brand is named at all</b> —
+     not ours, not anyone's.</p>
+  <ul class="plain">
+    <li><b>Orlistat — 19 answers.</b> An ingredient, plus its pharmacy products Alli (8) and Xenical (4).</li>
+    <li><b>Glucomannan — 10</b>, <b>Berberin — 7</b>. Ingredients again, not brands.</li>
+    <li><b>Ozempic 17 · Wegovy 11 · Mounjaro 11.</b> Prescription drugs, named to draw the contrast with supplements.</li>
+  </ul>
+  <p>So "beste Abnehmkapseln" does not return a shopping list. It returns an ingredient
+     explainer wrapped in a consumer warning. There is no brand slot in that answer for us
+     to win — which means the goal is not to out-rank a rival, it is to become the kind of
+     page these answers are built out of.</p>
+</section>
+
+<section id="sources">
+  <div class="sechead"><h2>Which sources they trust</h2></div>
+  <p>Thirty-six distinct domains were cited. The distribution is not flat — one source
+     is doing most of the work, and it is a regulator, not a publisher.</p>
+  <table class="dom"><tbody>
+<tr><td class="dm">verbraucherzentrale.de</td><td class="dq"><span class="bar" style="--w:73.3%"></span><b>22</b></td></tr>
+<tr><td class="dm">ema.europa.eu</td><td class="dq"><span class="bar" style="--w:43.3%"></span><b>13</b></td></tr>
+<tr><td class="dm">de.trustpilot.com</td><td class="dq"><span class="bar" style="--w:16.7%"></span><b>5</b></td></tr>
+<tr><td class="dm">shop-apotheke.com</td><td class="dq"><span class="bar" style="--w:16.7%"></span><b>5</b></td></tr>
+<tr><td class="dm">test.de</td><td class="dq"><span class="bar" style="--w:16.7%"></span><b>5</b></td></tr>
+<tr><td class="dm">ozem-plus.com</td><td class="dq"><span class="bar" style="--w:10.0%"></span><b>3</b></td></tr>
+<tr><td class="dm">nccih.nih.gov</td><td class="dq"><span class="bar" style="--w:10.0%"></span><b>3</b></td></tr>
+<tr><td class="dm">welt.de</td><td class="dq"><span class="bar" style="--w:10.0%"></span><b>3</b></td></tr>
+<tr><td class="dm">spiegel.de</td><td class="dq"><span class="bar" style="--w:10.0%"></span><b>3</b></td></tr>
+<tr><td class="dm">find-and-update.company-information.service.gov.uk</td><td class="dq"><span class="bar" style="--w:6.7%"></span><b>2</b></td></tr>
+  </tbody></table>
+  <p style="margin-top:16px">Verbraucherzentrale appears on <b>22 of 30 questions</b>, EMA on 13.
+     Below them sit Trustpilot, Shop-Apotheke and Stiftung Warentest's test.de. Every one of
+     those is either a regulator, a marketplace, or a review platform. There is no independent
+     affiliate review site anywhere in the trusted set — which tells us what shape of page
+     these engines will and won't quote.</p>
+</section>
+
+<section id="next">
+  <div class="sechead"><h2>What we do next</h2></div>
+  <p>Two of these are measurement, two are build. None of them is outreach — no independent
+     editor is going to add a publicly-flagged supplement brand to a list, and pitching them
+     would only put our name in front of people who write warnings.</p>
+  <ol class="acts">
+    <li>
+      <h3>Fix the domain the engines cite</h3>
+      <p>Cheapest fix with the clearest payoff. The engines already answer our brand questions;
+         they just point somewhere else. Work out why ozem-plus.com reads as "official" to them
+         and ozem-plus.store does not, and make our domain the one they resolve to.</p>
+    </li>
+    <li>
+      <h3>Answer the eight brand questions ourselves, on our own pages</h3>
+      <p>Seriös-oder-Betrug, Erfahrungen, Nebenwirkungen, Apotheke, Preis. The engines are
+         already answering these from Trustpilot and the Verbraucherzentrale because we have
+         published nothing they can quote. This is the page set we know how to build.</p>
+    </li>
+    <li>
+      <h3>Re-run the same 30 in 30 days</h3>
+      <p>The sheet, the collector and the extraction all work end to end now, so a repeat run
+         costs one VA session. Same questions, same engines, same batch — that turns this from
+         a snapshot into a measurement we can move.</p>
+    </li>
+    <li>
+      <h3>Run it again on a property that isn't flagged</h3>
+      <p>Everything above is constrained by the brand being on the Verbraucherzentrale list.
+         Pointing the identical instrument at a clean property tells us how much of the
+         zero is the brand and how much is the category.</p>
+    </li>
+  </ol>
+</section>
+
+<section id="data">
+  <div class="sechead"><h2>Pull the data yourself</h2></div>
+  <div class="copy"><button type="button">copy</button>AT=$(python3 -c "import json;print(json.load(open('/root/.config/ai-visibility-tokens.json'))['admin_token'])")
+curl -s "https://ai-visibility-collect.fleet-fefsba.workers.dev/export?token=$AT&amp;batch=ozem-de" &gt; answers.json</div>
+  <p style="color:var(--dim);font-size:.9rem">The collector keeps every run. Re-submitting a
+     question upserts in place, so a repeat run with a new batch name sits alongside this one
+     rather than overwriting it.</p>
+</section>
+
+</div>
+
+<footer><div class="wrap">
+  <div class="rule"></div>
+  <p>30 questions × ChatGPT + Gemini · batch <code>ozem-de</code> · collected 31 Jul 2026 ·
+     60 records, 0 skipped. Sentiment and brand counts are extracted from the raw pasted text,
+     not judged by the VA.</p>
+</div></footer>
+
+<script>
+document.querySelectorAll('.copy button').forEach(function(b){
+  b.addEventListener('click', function(){
+    var t = b.parentNode.textContent.replace(/^copy/, '').trim();
+    navigator.clipboard.writeText(t).then(function(){
+      b.textContent = 'copied'; b.classList.add('done');
+      setTimeout(function(){ b.textContent = 'copy'; b.classList.remove('done'); }, 1600);
+    });
+  });
+});
+</script>
+</body>
+</html>
