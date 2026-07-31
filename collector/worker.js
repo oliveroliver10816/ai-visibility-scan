@@ -1,12 +1,12 @@
 /**
  * ai-visibility-collect — receives one run record per save from the VA task sheet.
  *
- * The VA never handles a file. Each "Save and next" POSTs that single run here and it
- * lands in D1 immediately, so partial work is never lost and there is nothing to send.
- * The page keeps its localStorage copy and its Download button purely as a fallback.
+ * The VA never handles a file and is never asked to interpret anything. She pastes the raw
+ * reply from each engine; every save POSTs that text here and it lands in D1 immediately.
+ * All extraction (brand mentions, cited URLs) happens later, on our side, from the raw text.
  *
  * Endpoints
- *   POST /submit    submit token, one run record  -> upsert by (batch, question_number, engine)
+ *   POST /submit    submit token, one pasted answer -> upsert by (batch, question_number, engine)
  *   GET  /status    submit token                  -> {recorded, total} so the page can show truth
  *   GET  /export    ADMIN token                   -> every record as JSON
  *
@@ -27,19 +27,12 @@ const json = (obj, status = 200) =>
     headers: { "Content-Type": "application/json", ...CORS },
   });
 
-const MAX_BODY = 24 * 1024;      // one run record is ~1-2 KB; this is generous
-const MAX_LIST = 60;             // brands / sources per answer
+const MAX_BODY = 64 * 1024;      // now carries the full pasted answer text
+const MAX_ANSWER = 40000;        // a 120-word answer is ~1 KB; this is very generous
 const MAX_STR = 2000;
 
 const clean = (v, max = MAX_STR) =>
   typeof v === "string" ? v.slice(0, max) : "";
-
-const cleanList = (v) =>
-  Array.isArray(v)
-    ? v.filter((x) => typeof x === "string" && x.trim())
-       .slice(0, MAX_LIST)
-       .map((x) => x.trim().slice(0, 600))
-    : [];
 
 async function ensure(env) {
   await env.DB.prepare(
@@ -49,10 +42,8 @@ async function ensure(env) {
        question_number INTEGER NOT NULL,
        question TEXT NOT NULL,
        engine TEXT NOT NULL,
-       us TEXT,
-       brands TEXT,
-       sources TEXT,
-       no_sources INTEGER DEFAULT 0,
+       prompt TEXT,
+       answer_text TEXT,
        notes TEXT,
        skipped INTEGER DEFAULT 0,
        saved_at TEXT,
@@ -92,23 +83,20 @@ export default {
 
       await env.DB.prepare(
         `INSERT INTO runs
-           (batch, question_number, question, engine, us, brands, sources,
-            no_sources, notes, skipped, saved_at, received_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+           (batch, question_number, question, engine, prompt, answer_text,
+            notes, skipped, saved_at, received_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?)
          ON CONFLICT (batch, question_number, engine) DO UPDATE SET
-           us=excluded.us, brands=excluded.brands, sources=excluded.sources,
-           no_sources=excluded.no_sources, notes=excluded.notes,
-           skipped=excluded.skipped, saved_at=excluded.saved_at,
-           received_at=excluded.received_at`
+           prompt=excluded.prompt, answer_text=excluded.answer_text,
+           notes=excluded.notes, skipped=excluded.skipped,
+           saved_at=excluded.saved_at, received_at=excluded.received_at`
       ).bind(
         clean(b.batch, 60) || "default",
         qn,
         clean(b.question),
         engine,
-        clean(b.us, 20),
-        JSON.stringify(cleanList(b.brands)),
-        JSON.stringify(cleanList(b.sources)),
-        b.no_sources ? 1 : 0,
+        clean(b.prompt, 4000),
+        clean(b.answer_text, MAX_ANSWER),
         clean(b.notes, 600),
         b.skipped ? 1 : 0,
         clean(b.saved_at, 40),
@@ -143,13 +131,7 @@ export default {
         batch,
         exported_at: new Date().toISOString(),
         recorded: results.length,
-        runs: results.map((r) => ({
-          ...r,
-          brands: JSON.parse(r.brands || "[]"),
-          sources: JSON.parse(r.sources || "[]"),
-          no_sources: !!r.no_sources,
-          skipped: !!r.skipped,
-        })),
+        runs: results.map((r) => ({ ...r, skipped: !!r.skipped })),
       });
     }
 
