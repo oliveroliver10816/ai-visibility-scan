@@ -87,8 +87,8 @@ code{font-family:'IBM Plex Mono',monospace;background:var(--edge);padding:2px 6p
       <li><b>Open ChatGPT in one tab and Gemini in another.</b> Both free accounts are fine.</li>
       <li><b>Copy the question below</b> with the Copy button and paste it into whichever tool the page is asking for.</li>
       <li><b>Read the answer</b> and fill in the three boxes on this page.</li>
-      <li><b>Press Save and next.</b> Your work is stored in this browser, so you can stop and come back.</li>
-      <li><b>When the bar reaches 100%, press Download</b> and send the file back.</li>
+      <li><b>Press Save and next.</b> Each answer is sent to us the moment you save it, so there is nothing to email and nothing to lose.</li>
+      <li><b>When the bar reaches 100%, you are finished.</b> No file to send — just tell Bob you're done.</li>
     </ol>
 
     <div class="warnbox"><b>Two rules that matter more than speed.</b>
@@ -103,7 +103,7 @@ code{font-family:'IBM Plex Mono',monospace;background:var(--edge);padding:2px 6p
   <div class="wrap">
     <span class="mono" id="counter">0 of 60</span>
     <div class="track"><div class="fill" id="fill"></div></div>
-    <button id="dl" class="primary" disabled>Download</button>
+    <span class="mono" id="sync">—</span>
   </div>
 </div>
 
@@ -158,11 +158,13 @@ code{font-family:'IBM Plex Mono',monospace;background:var(--edge);padding:2px 6p
     </div>
 
     <div class="card" id="finish" style="display:none">
-      <div class="done"><b>All 60 done.</b> Press Download, then send the file back. If the
-      download does not start, press Copy all instead and paste it into a message.</div>
+      <div class="done"><b>All 60 done — that's the job finished.</b> Everything has already been
+      sent, so there is nothing to email. Just let Bob know you're done.</div>
+      <p class="note">If the counter above ever shows “not sent yet”, press Resend below before
+      you close the page.</p>
       <div class="row" style="margin-top:14px">
-        <button id="dl2" class="primary">Download the file</button>
-        <button id="copyall">Copy all instead</button>
+        <button id="resend">Resend anything unsent</button>
+        <button id="dl2">Save a backup copy</button>
       </div>
     </div>
 
@@ -213,6 +215,11 @@ const QUESTIONS = [
 ];
 const ENGINES = ["ChatGPT", "Gemini"];
 const KEY = "aivis_ozem_de_v1";
+const ENDPOINT = "https://ai-visibility-collect.fleet-fefsba.workers.dev";
+// Write-only token. It can add runs and nothing else — reading the data back needs a
+// different token that never leaves our server.
+const TOKEN = "RLSdzO-wFPs67geZrYh7ML1O";
+const BATCH = "ozem-de";
 
 const runs = [];
 QUESTIONS.forEach((q, qi) => ENGINES.forEach(e => runs.push({ qi, q, engine: e })));
@@ -244,8 +251,13 @@ function render() {
   const done = Object.keys(data).length;
   $("counter").textContent = `${done} of ${runs.length}`;
   $("fill").style.width = (done / runs.length * 100) + "%";
-  $("dl").disabled = done === 0;
   $("finish").style.display = done === runs.length ? "block" : "none";
+
+  const unsent = Object.keys(data).filter(k => !data[k].sent).length;
+  const s = $("sync");
+  if (done === 0) { s.textContent = "—"; s.style.color = "var(--dim)"; }
+  else if (unsent === 0) { s.textContent = "all sent ✓"; s.style.color = "var(--go)"; }
+  else { s.textContent = unsent + " not sent yet"; s.style.color = "var(--warn)"; }
 
   const g = $("grid"); g.innerHTML = "";
   runs.forEach((rr, i) => {
@@ -283,11 +295,47 @@ function save(skipped) {
     saved_at: new Date().toISOString()
   };
   localStorage.setItem(KEY, JSON.stringify(data));
+  const savedIdx = idx;
   const next = runs.findIndex((_, i) => !data[i]);
   idx = next < 0 ? Math.min(idx + 1, runs.length - 1) : next;
   usVal = null;
   render();
   window.scrollTo({ top: 0, behavior: "smooth" });
+  send(savedIdx);
+}
+
+// Send one run. Never blocks the VA — if it fails, the record stays flagged unsent and
+// gets retried on the next save, on page load, and by the Resend button.
+async function send(i) {
+  const d = data[i];
+  if (!d || d.sent) return true;
+  const r = runs[i];
+  try {
+    const res = await fetch(ENDPOINT + "/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Token": TOKEN },
+      body: JSON.stringify({
+        batch: BATCH, question_number: r.qi + 1, question: r.q, engine: r.engine,
+        us: d.us, brands: d.brands, sources: d.sources,
+        no_sources: d.no_sources, notes: d.notes, skipped: d.skipped,
+        saved_at: d.saved_at
+      })
+    });
+    if (!res.ok) throw new Error(res.status);
+    data[i].sent = true;
+    localStorage.setItem(KEY, JSON.stringify(data));
+    render();
+    return true;
+  } catch (e) {
+    render();
+    return false;
+  }
+}
+
+async function flush() {
+  const pending = Object.keys(data).filter(k => !data[k].sent);
+  for (const k of pending) { await send(Number(k)); }
+  return Object.keys(data).filter(k => !data[k].sent).length;
 }
 
 $("save").onclick = () => save(false);
@@ -315,15 +363,17 @@ function download() {
   a.download = "ai-answers-ozem-de.json";
   a.click(); URL.revokeObjectURL(a.href);
 }
-$("dl").onclick = download;
 $("dl2").onclick = download;
-$("copyall").onclick = async () => {
-  try { await navigator.clipboard.writeText(payload()); $("copyall").textContent = "Copied ✓"; }
-  catch (e) { $("copyall").textContent = "Use Download instead"; }
-  setTimeout(() => $("copyall").textContent = "Copy all instead", 1800);
+$("resend").onclick = async () => {
+  $("resend").textContent = "Sending…"; $("resend").disabled = true;
+  const left = await flush();
+  $("resend").textContent = left === 0 ? "Everything sent ✓" : left + " still failing — tell Bob";
+  $("resend").disabled = false;
+  setTimeout(() => $("resend").textContent = "Resend anything unsent", 3000);
 };
 
 render();
+flush();
 </script>
 </body>
 </html>
